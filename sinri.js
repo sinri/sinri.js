@@ -150,7 +150,9 @@ var SINRI_JS_OBJECT_OF_AJAX={
 		}else{
 			query=[];
 			for(var k1 in data){
-				query.push(encodeURIComponent(k1)+'='+encodeURIComponent(data[k1]));
+				if ({}.hasOwnProperty.call(data, k1)) {
+					query.push(encodeURIComponent(k1)+'='+encodeURIComponent(data[k1]));
+				}
 			}
 			query=query.join('&');
 		}
@@ -168,7 +170,9 @@ var SINRI_JS_OBJECT_OF_AJAX={
 		}else{
 			postData=[];
 			for(var k2 in data){
-				postData.push(encodeURIComponent(k2)+'='+encodeURIComponent(data[k2]));
+				if ({}.hasOwnProperty.call(data, k2)) {
+					postData.push(encodeURIComponent(k2)+'='+encodeURIComponent(data[k2]));
+				}
 			}
 			postData=postData.join('&');
 		}
@@ -213,10 +217,10 @@ var SINRI_JS_OBJECT_OF_AJAX={
 				4: request finished and response is ready
 			 */
 			// console.log('ajax tobe readyState='+this.readyState+' status='+this.status);
+			var response=this.responseText;
 			if (this.readyState === 4){
 				if(this.status === 200) {
 					// correct final status
-					var response=this.responseText;
 					if(dataType==='json'){
 						try{
 							response=JSON.parse(response);
@@ -298,21 +302,16 @@ var SINRI_JS=function(){
 	return SINRI_JS_OBJECT;
 };
 
-for(var method_toolkit in SINRI_JS_OBJECT_OF_TOOLKIT){
-	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_TOOLKIT, method_toolkit)) {
-		SINRI_JS[method_toolkit]=SINRI_JS_OBJECT_OF_TOOLKIT[method_toolkit];
+function registerMethodToSinriJS(obj){
+	for(var method in obj){
+		if ({}.hasOwnProperty.call(obj, method)) {
+			SINRI_JS[method]=obj[method];
+		}
 	}
 }
-for(var method_ajax in SINRI_JS_OBJECT_OF_AJAX){
-	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_AJAX, method_ajax)) {
-		SINRI_JS[method_ajax]=SINRI_JS_OBJECT_OF_AJAX[method_ajax];
-	}
-}
-for(var method_window in SINRI_JS_OBJECT_OF_WINDOW){
-	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_WINDOW, method_window)) {
-		SINRI_JS[method_window]=SINRI_JS_OBJECT_OF_WINDOW[method_window];
-	}
-}
+registerMethodToSinriJS(SINRI_JS_OBJECT_OF_TOOLKIT);
+registerMethodToSinriJS(SINRI_JS_OBJECT_OF_AJAX);
+registerMethodToSinriJS(SINRI_JS_OBJECT_OF_WINDOW);
 
 /**
  * use $ as a shortcut just like jQuery.
