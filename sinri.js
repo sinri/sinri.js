@@ -48,23 +48,20 @@ var SINRI_JS_OBJECT={
 		}
 	},
 	html:function(){
-		if(this._elements.length===1){
-			if(arguments.length===0){
-				return this._elements[0].innerHTML;
-			}else{
-				this._elements[0].innerHTML=arguments[0];
-			}
+		if(arguments.length===0){
+			return SINRI_JS_OBJECT.eprop('innerHTML');
+		}else{
+			return SINRI_JS_OBJECT.eprop('innerHTML',arguments[0]);
 		}
 	},
 	text:function(){
-		if(this._elements.length===1){
-			if(arguments.length===0){
-				return this._elements[0].innerText;
-			}else{
-				this._elements[0].innerText=arguments[0];
-			}
+		if(arguments.length===0){
+			return SINRI_JS_OBJECT.eprop('innerText');
+		}else{
+			return SINRI_JS_OBJECT.eprop('innerText',arguments[0]);
 		}
 	},
+
 
 	eprop:function(){
 		if(this._elements.length===1){
