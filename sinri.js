@@ -1,6 +1,6 @@
 //SINRI.JS
 var SINRI_JS_OBJECT={
-	version:'0.3',
+	version:'0.4',
 	_elements:[],
 
 	// private use
@@ -97,7 +97,7 @@ var SINRI_JS_OBJECT={
 	}
 };
 var SINRI_JS_OBJECT_OF_AJAX={
-	hotfix:function(){
+	getXHttp:function(){
 		if (!XMLHttpRequest.prototype.sendAsBinary) {
 			XMLHttpRequest.prototype.sendAsBinary = function(sData) {
 				var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
@@ -109,6 +109,14 @@ var SINRI_JS_OBJECT_OF_AJAX={
 				/* ...or as ArrayBuffer (legacy)...: this.send(ui8Data.buffer); */
 			};
 		}
+		var xhttp;
+		if (window.XMLHttpRequest) {
+			xhttp = new XMLHttpRequest();
+		} else {
+			// code for IE6, IE5
+			xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		return xhttp;
 	},
 	processMethod:function(method){
 		if(!method)method='GET';
@@ -164,9 +172,9 @@ var SINRI_JS_OBJECT_OF_AJAX={
 			}
 			postData=postData.join('&');
 		}
+		return postData;
 	},
 	ajax:function(obj){
-		SINRI_JS_OBJECT_OF_AJAX.hotfix();
 		/*
 		 * obj contains
 		 * url,method,data,
@@ -188,19 +196,13 @@ var SINRI_JS_OBJECT_OF_AJAX={
 		if(!url){
 			return null;
 		}
-		if((method=='GET' || method=='DELETE') && data){
+		if((method==='GET' || method==='DELETE') && data){
 			url=SINRI_JS_OBJECT_OF_AJAX.getUrlWithQueryString(url,data);
 		}else if(data){
 			var postData=SINRI_JS_OBJECT_OF_AJAX.getPostData(data);
 		}
 
-		var xhttp;
-		if (window.XMLHttpRequest) {
-			xhttp = new XMLHttpRequest();
-		} else {
-			// code for IE6, IE5
-			xhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
+		var xhttp=SINRI_JS_OBJECT_OF_AJAX.getXHttp();
 		xhttp.onreadystatechange = function() {
 			/*
 			 * Holds the status of the XMLHttpRequest.
@@ -214,21 +216,24 @@ var SINRI_JS_OBJECT_OF_AJAX={
 			if (this.readyState === 4){
 				if(this.status === 200) {
 					// correct final status
-					if(dataType=='json'){
-						var json=JSON.parse(this.responseText);
-						if(json){
-							if(callback_for_done){callback_for_done(json,this.status);}
-						}else{
-							if(callback_for_fail){callback_for_fail(this.responseText,this.status);}
+					var response=this.responseText;
+					if(dataType==='json'){
+						try{
+							response=JSON.parse(response);
+						}catch(e){
+							response=false;
 						}
-					}else{
-						if(callback_for_done){callback_for_done(this.responseText,this.status);}
 					}
-					if(callback_for_finally){callback_for_finally(this.responseText,this.status);}
+					if(response || response===''){
+						if(callback_for_done){callback_for_done(response,this.status);}
+					}else{
+						if(callback_for_fail){callback_for_fail(this.responseText,this.status);}
+					}
+					if(callback_for_finally){callback_for_finally(response,this.status);}
 				}else{
 					// not correct final status
 					if(callback_for_fail){callback_for_fail(this.responseText,this.status);}
-					if(callback_for_finally){callback_for_finally(this.responseText,this.status);}
+					if(callback_for_finally){callback_for_finally(response,this.status);}
 				}
 			}
 		};
@@ -237,9 +242,11 @@ var SINRI_JS_OBJECT_OF_AJAX={
 		}
 		xhttp.open(method,url,async,user,pass);
 
-		if(header && header.length>0){
+		if(header){
 			for(var header_name in header){
-				xhttp.setRequestHeader(header_name,header[header_name]);
+				if ({}.hasOwnProperty.call(header, header_name)) {
+					xhttp.setRequestHeader(header_name,header[header_name]);
+				}
 			}
 			if(method==='POST' && !header['Content-type']){
 				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -273,7 +280,7 @@ var SINRI_JS_OBJECT_OF_WINDOW={
 	},
 	loaded:function(func){
 		window.onload=func;
-	},
+	}
 }
 var SINRI_JS=function(){
 	//SELECTOR
@@ -292,13 +299,19 @@ var SINRI_JS=function(){
 };
 
 for(var method_toolkit in SINRI_JS_OBJECT_OF_TOOLKIT){
-	SINRI_JS[method_toolkit]=SINRI_JS_OBJECT_OF_TOOLKIT[method_toolkit];
+	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_TOOLKIT, method_toolkit)) {
+		SINRI_JS[method_toolkit]=SINRI_JS_OBJECT_OF_TOOLKIT[method_toolkit];
+	}
 }
 for(var method_ajax in SINRI_JS_OBJECT_OF_AJAX){
-	SINRI_JS[method_ajax]=SINRI_JS_OBJECT_OF_AJAX[method_ajax];
+	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_AJAX, method_ajax)) {
+		SINRI_JS[method_ajax]=SINRI_JS_OBJECT_OF_AJAX[method_ajax];
+	}
 }
 for(var method_window in SINRI_JS_OBJECT_OF_WINDOW){
-	SINRI_JS[method_window]=SINRI_JS_OBJECT_OF_WINDOW[method_window];
+	if ({}.hasOwnProperty.call(SINRI_JS_OBJECT_OF_WINDOW, method_window)) {
+		SINRI_JS[method_window]=SINRI_JS_OBJECT_OF_WINDOW[method_window];
+	}
 }
 
 /**
