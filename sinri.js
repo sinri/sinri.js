@@ -1,7 +1,9 @@
 //SINRI.JS
 var SINRI_JS_OBJECT={
-	version:'0.1',
+	version:'0.2',
 	_elements:[],
+
+	// private use
 
 	init:function(){
 		var instance=SINRI_JS();
@@ -20,9 +22,11 @@ var SINRI_JS_OBJECT={
 		return document.querySelectorAll(query);
 	},
 
+	// capsulized element
+
 	val:function(){
-		if(this._elements.length==1){
-			if(arguments.length==0){
+		if(this._elements.length===1){
+			if(arguments.length===0){
 				return this._elements[0].value;
 			}else{
 				this._elements[0].value=arguments[0];
@@ -30,12 +34,12 @@ var SINRI_JS_OBJECT={
 		}
 	},
 	attr:function(){
-		if(this._elements.length==1){
+		if(this._elements.length===1){
 			console.log(this._elements[0].attributes);
 			if(arguments.length<=0){
 				return null;
 			}
-			else if(arguments.length==1){
+			else if(arguments.length===1){
 				var attr_name=arguments[0];
 				return this._elements[0].getAttribute(attr_name);
 			}
@@ -47,8 +51,8 @@ var SINRI_JS_OBJECT={
 		}
 	},
 	html:function(){
-		if(this._elements.length==1){
-			if(arguments.length==0){
+		if(this._elements.length===1){
+			if(arguments.length===0){
 				return this._elements[0].innerHTML;
 			}else{
 				this._elements[0].innerHTML=arguments[0];
@@ -56,8 +60,8 @@ var SINRI_JS_OBJECT={
 		}
 	},
 	text:function(){
-		if(this._elements.length==1){
-			if(arguments.length==0){
+		if(this._elements.length===1){
+			if(arguments.length===0){
 				return this._elements[0].innerText;
 			}else{
 				this._elements[0].innerText=arguments[0];
@@ -65,13 +69,12 @@ var SINRI_JS_OBJECT={
 		}
 	},
 
-	///
 	eprop:function(){
-		if(this._elements.length==1){
-			if(arguments.length==0){
+		if(this._elements.length===1){
+			if(arguments.length===0){
 				return undefined;
 			}
-			else if(arguments.length==1){
+			else if(arguments.length===1){
 				return this._elements[0][arguments[0]];
 			}
 			else{
@@ -80,78 +83,27 @@ var SINRI_JS_OBJECT={
 		}
 	},
 
-	//// AJAX
-	ajax:function(obj){
-		/*
-		 * obj contains
-		 * url,method,data,
-		 */
+	//// Event
 
-		var url=obj.url;
-		var method=obj.method;
-		var data=obj.data;
-		var async=obj.async;
-		var user=obj.user;
-		var pass=obj.pass;
-		var dataType=obj.dataType;
-		var callback_for_beforeSend=obj.beforeSend;
-		var callback_for_done=obj.done;
-		var callback_for_fail=obj.fail;
-		var callback_for_finally=obj.always;
-
-		if(!method){
-			method='GET';
-		}
-		method=method.toUpperCase();
-		if(!async){
-			async=true;
-		}
-		if(!user){
-			user=null;
-		}
-		if(!pass){
-			pass=null;
-		}
-		if(!dataType){
-			dataType='html';
+	on:function(){
+		if(arguments.length<2){
+			return false;
+		}else if(arguments.length===2){
+			var e=arguments[0];
+			var f=arguments[1];
+			var useCapture=false;
 		}else{
-			dataType=dataType.toLowerCase();
+			var e=arguments[0];
+			var f=arguments[1];
+			var useCapture=arguments[2];
 		}
-
-		if(!url){
-			return null;
+		for(var i=0;i<this._elements.length;i++){
+			this._elements[i].addEventListener(e,f,useCapture);
 		}
-		if((method=='GET' || method=='DELETE') && data){
-			if((Object.prototype.toString.call(data) === '[object String]')){
-				var query=data;
-			}else{
-				var query=[];
-				for(var k in data){
-					query.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
-				}
-				query=query.join('&');
-			}
-			if(url.indexOf('?')>=0){
-				//XXXX?SSS + &K=V
-				url=url+'&'+query;
-			}else{
-				//XXXX + ?K=V
-				url=url+'?'+query;
-			}
-		}else if(data){
-			if((Object.prototype.toString.call(data) === '[object String]')){
-				var postData=data;
-			}else{
-				var postData=[];
-				for(var k in data){
-					postData.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
-				}
-				postData=postData.join('&');
-			}
-		}
-
-		///// AJAX
-
+	},
+};
+var SINRI_JS_OBJECT_OF_AJAX={
+	hotfix:function(){
 		if (!XMLHttpRequest.prototype.sendAsBinary) {
 			XMLHttpRequest.prototype.sendAsBinary = function(sData) {
 				var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
@@ -162,6 +114,89 @@ var SINRI_JS_OBJECT={
 				this.send(ui8Data);
 				/* ...or as ArrayBuffer (legacy)...: this.send(ui8Data.buffer); */
 			};
+		}
+	},
+	processMethod:function(method){
+		if(!method)method='GET';
+		method=method.toUpperCase();
+		return method;
+	},
+	processAsync:function(async){
+		if(!async)async=true;
+		return async;
+	},
+	processUser:function(user){
+		if(!user)user=null;
+		return user;
+	},
+	processPass:function(pass){
+		if(!pass)pass=null;
+		return pass;
+	},
+	processDataType:function(dataType){
+		if(!dataType){
+			dataType='html';
+		}else{
+			dataType=dataType.toLowerCase();
+		}
+		return dataType;
+	},
+	getUrlWithQueryString:function(url,data){
+		if(SINRI_JS.isString(data)){
+			var query=data;
+		}else{
+			var query=[];
+			for(var k in data){
+				query.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
+			}
+			query=query.join('&');
+		}
+		if(url.indexOf('?')>=0){
+			//XXXX?SSS + &K=V
+			url=url+'&'+query;
+		}else{
+			//XXXX + ?K=V
+			url=url+'?'+query;
+		}
+		return url;
+	},
+	getPostData:function(data){
+		if(SINRI_JS.isString(data)){
+			var postData=data;
+		}else{
+			var postData=[];
+			for(var k in data){
+				postData.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
+			}
+			postData=postData.join('&');
+		}
+	},
+	ajax:function(obj){
+		SINRI_JS_OBJECT_OF_AJAX.hotfix();
+		/*
+		 * obj contains
+		 * url,method,data,
+		 */
+		var method=SINRI_JS_OBJECT_OF_AJAX.processMethod(obj.method);
+		var async=SINRI_JS_OBJECT_OF_AJAX.processAsync(obj.async);
+		var user=SINRI_JS_OBJECT_OF_AJAX.processPass(obj.user);
+		var pass=SINRI_JS_OBJECT_OF_AJAX.processPass(obj.pass);
+		var dataType=SINRI_JS_OBJECT_OF_AJAX.processDataType(obj.dataType);
+		var callback_for_beforeSend=obj.beforeSend;
+		var callback_for_done=obj.done;
+		var callback_for_fail=obj.fail;
+		var callback_for_finally=obj.always;
+
+		var url=obj.url;
+		var data=obj.data;
+
+		if(!url){
+			return null;
+		}
+		if((method=='GET' || method=='DELETE') && data){
+			url=SINRI_JS_OBJECT_OF_AJAX.getUrlWithQueryString(url,data);
+		}else if(data){
+			var postData=SINRI_JS_OBJECT_OF_AJAX.getPostData(data);
 		}
 
 		var xhttp;
@@ -180,37 +215,25 @@ var SINRI_JS_OBJECT={
 				3: processing request 
 				4: request finished and response is ready
 			 */
-			console.log('ajax tobe readyState='+this.readyState+' status='+this.status);
+			// console.log('ajax tobe readyState='+this.readyState+' status='+this.status);
 			if (this.readyState == 4){
 				if(this.status == 200) {
 					// correct final status
 					if(dataType=='json'){
 						var json=JSON.parse(this.responseText);
 						if(json){
-							if(callback_for_done){
-								callback_for_done.call(null,json,this.status);
-							}
+							if(callback_for_done){callback_for_done.call(null,json,this.status);}
 						}else{
-							if(callback_for_fail){
-								callback_for_fail.call(null,this.responseText,this.status)
-							}
+							if(callback_for_fail){callback_for_fail.call(null,this.responseText,this.status);}
 						}
 					}else{
-						if(callback_for_done){
-							callback_for_done.call(null,this.responseText,this.status);
-						}
+						if(callback_for_done){callback_for_done.call(null,this.responseText,this.status);}
 					}
-					if(callback_for_finally){
-						callback_for_finally.call(null,this.responseText,this.status);
-					}
+					if(callback_for_finally){callback_for_finally.call(null,this.responseText,this.status);}
 				}else{
 					// not correct final status
-					if(callback_for_fail){
-						callback_for_fail.call(null,this.responseText,this.status)
-					}
-					if(callback_for_finally){
-						callback_for_finally.call(null,this.responseText,this.status);
-					}
+					if(callback_for_fail){callback_for_fail.call(null,this.responseText,this.status)}
+					if(callback_for_finally){callback_for_finally.call(null,this.responseText,this.status);}
 				}
 			}
 		};
@@ -224,9 +247,30 @@ var SINRI_JS_OBJECT={
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send(postData);
 		}
-		console.log('confirm async');
+		// console.log('confirm async');
 	}
 };
+var SINRI_JS_OBJECT_OF_TOOLKIT={
+	isString:function(data){
+		return (Object.prototype.toString.call(data) === '[object String]');
+	}
+};
+var SINRI_JS_OBJECT_OF_WINDOW={
+	ready:function(func){
+		var tid = setInterval( 
+			function () {
+				console.log('check ready get readyState as '+document.readyState);
+				if ( document.readyState !== 'complete' ) return;
+				clearInterval( tid );
+				func.call(window);
+			}, 
+			100
+		);
+	},
+	loaded:function(func){
+		window.onload=func;
+	},
+}
 var SINRI_JS=function(){
 	//SELECTOR
 	if(arguments.length==1){
@@ -242,7 +286,17 @@ var SINRI_JS=function(){
 
 	return SINRI_JS_OBJECT;
 };
-SINRI_JS.ajax=SINRI_JS_OBJECT.ajax;
+
+for(var method in SINRI_JS_OBJECT_OF_TOOLKIT){
+	SINRI_JS[method]=SINRI_JS_OBJECT_OF_TOOLKIT[method];
+}
+for(var method in SINRI_JS_OBJECT_OF_AJAX){
+	SINRI_JS[method]=SINRI_JS_OBJECT_OF_AJAX[method];
+}
+for(var method in SINRI_JS_OBJECT_OF_WINDOW){
+	SINRI_JS[method]=SINRI_JS_OBJECT_OF_WINDOW[method];
+}
+
 /**
  * use $ as a shortcut just like jQuery.
  */

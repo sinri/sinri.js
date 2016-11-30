@@ -1,11 +1,24 @@
-# sinri.js
-Sinri.js Lighter jQuery
+# Sinri.js
 
-A lighter javascript toolkit for web developers.
+Sinri.js is a lighter javascript toolkit for web developers, with jQuery-like style.
+
+[![Code Climate](https://codeclimate.com/github/sinri/sinri.js/badges/gpa.svg)](https://codeclimate.com/github/sinri/sinri.js) [![Issue Count](https://codeclimate.com/github/sinri/sinri.js/badges/issue_count.svg)](https://codeclimate.com/github/sinri/sinri.js)
+
+It is not for those hackers, nor senior and professional frontend engineer when dealing with top projects. However, it is designed for those use frontend technology just for a short-time tool and do not want to be bothered by the variousity between versions of jQuery.
+
+So anyone prefer React or Angular.js or Vue.js or any other top frontend plans could neglect this project.
 
 # API Usage
 
 The main object is `SINRI_JS`. If `$` was not used by others, it could be used as a shortcus.
+
+## Window Event
+
+There are two functions on window's being loaded, `ready` and `loaded`.
+
+	$.ready(callback) // simulate the jQuery ready
+
+	$.loaded(callback) // capsulize the window.onload
 
 ## Selector
 
@@ -21,8 +34,11 @@ Second, follow the functions, including
 	html(value_to_set) // Set innerHTML of the selected element
 	text() // Get innerText of the selected element
 	text(value_to_set) // Set innerText of the selected element
+
 	eprop(name) // Get value [name] of the selected element (such as one_input.checked)
 	eprop(name,value_to_set) // Set the value [name] of the selected element
+
+	on(event,function,useCapture) // set the event-function mapping of selected element
 
 ## AJAX
 
