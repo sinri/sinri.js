@@ -1,6 +1,6 @@
 //SINRI.JS
 var SINRI_JS_OBJECT={
-	version:'0.2',
+	version:'0.3',
 	_elements:[],
 
 	// private use
@@ -35,18 +35,15 @@ var SINRI_JS_OBJECT={
 	},
 	attr:function(){
 		if(this._elements.length===1){
-			console.log(this._elements[0].attributes);
+			// console.log(this._elements[0].attributes);
 			if(arguments.length<=0){
 				return null;
 			}
 			else if(arguments.length===1){
-				var attr_name=arguments[0];
-				return this._elements[0].getAttribute(attr_name);
+				return this._elements[0].getAttribute(arguments[0]);
 			}
 			else{
-				var attr_name=arguments[0];
-				var attr_value=arguments[1];
-				this._elements[0].setAttribute(attr_name,attr_value);
+				this._elements[0].setAttribute(arguments[0],arguments[1]);
 			}
 		}
 	},
@@ -86,21 +83,18 @@ var SINRI_JS_OBJECT={
 	//// Event
 
 	on:function(){
+		var useCapture=false;
 		if(arguments.length<2){
 			return false;
 		}else if(arguments.length===2){
-			var e=arguments[0];
-			var f=arguments[1];
-			var useCapture=false;
+			useCapture=false;
 		}else{
-			var e=arguments[0];
-			var f=arguments[1];
-			var useCapture=arguments[2];
+			useCapture=arguments[2];
 		}
 		for(var i=0;i<this._elements.length;i++){
-			this._elements[i].addEventListener(e,f,useCapture);
+			this._elements[i].addEventListener(arguments[0],arguments[1],useCapture);
 		}
-	},
+	}
 };
 var SINRI_JS_OBJECT_OF_AJAX={
 	hotfix:function(){
@@ -142,31 +136,31 @@ var SINRI_JS_OBJECT_OF_AJAX={
 		return dataType;
 	},
 	getUrlWithQueryString:function(url,data){
+		var query=null;
 		if(SINRI_JS.isString(data)){
-			var query=data;
+			query=data;
 		}else{
-			var query=[];
-			for(var k in data){
-				query.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
+			query=[];
+			for(var k1 in data){
+				query.push(encodeURIComponent(k1)+'='+encodeURIComponent(data[k1]));
 			}
 			query=query.join('&');
 		}
 		if(url.indexOf('?')>=0){
-			//XXXX?SSS + &K=V
 			url=url+'&'+query;
 		}else{
-			//XXXX + ?K=V
 			url=url+'?'+query;
 		}
 		return url;
 	},
 	getPostData:function(data){
+		var postData=null;
 		if(SINRI_JS.isString(data)){
-			var postData=data;
+			postData=data;
 		}else{
-			var postData=[];
-			for(var k in data){
-				postData.push(encodeURIComponent(k)+'='+encodeURIComponent(data[k]));
+			postData=[];
+			for(var k2 in data){
+				postData.push(encodeURIComponent(k2)+'='+encodeURIComponent(data[k2]));
 			}
 			postData=postData.join('&');
 		}
@@ -189,6 +183,7 @@ var SINRI_JS_OBJECT_OF_AJAX={
 
 		var url=obj.url;
 		var data=obj.data;
+		var header=obj.header;
 
 		if(!url){
 			return null;
@@ -216,35 +211,44 @@ var SINRI_JS_OBJECT_OF_AJAX={
 				4: request finished and response is ready
 			 */
 			// console.log('ajax tobe readyState='+this.readyState+' status='+this.status);
-			if (this.readyState == 4){
-				if(this.status == 200) {
+			if (this.readyState === 4){
+				if(this.status === 200) {
 					// correct final status
 					if(dataType=='json'){
 						var json=JSON.parse(this.responseText);
 						if(json){
-							if(callback_for_done){callback_for_done.call(null,json,this.status);}
+							if(callback_for_done){callback_for_done(json,this.status);}
 						}else{
-							if(callback_for_fail){callback_for_fail.call(null,this.responseText,this.status);}
+							if(callback_for_fail){callback_for_fail(this.responseText,this.status);}
 						}
 					}else{
-						if(callback_for_done){callback_for_done.call(null,this.responseText,this.status);}
+						if(callback_for_done){callback_for_done(this.responseText,this.status);}
 					}
-					if(callback_for_finally){callback_for_finally.call(null,this.responseText,this.status);}
+					if(callback_for_finally){callback_for_finally(this.responseText,this.status);}
 				}else{
 					// not correct final status
-					if(callback_for_fail){callback_for_fail.call(null,this.responseText,this.status)}
-					if(callback_for_finally){callback_for_finally.call(null,this.responseText,this.status);}
+					if(callback_for_fail){callback_for_fail(this.responseText,this.status);}
+					if(callback_for_finally){callback_for_finally(this.responseText,this.status);}
 				}
 			}
 		};
 		if(callback_for_beforeSend){
-			callback_for_beforeSend.call(null,method,url,data);
+			callback_for_beforeSend(method,url,data);
 		}
 		xhttp.open(method,url,async,user,pass);
-		if(method=='GET' || method=='DELETE'){
+
+		if(header && header.length>0){
+			for(var header_name in header){
+				xhttp.setRequestHeader(header_name,header[header_name]);
+			}
+			if(method==='POST' && !header['Content-type']){
+				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			}
+		}
+
+		if(method==='GET' || method==='DELETE'){
 			xhttp.send();
 		}else{
-			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send(postData);
 		}
 		// console.log('confirm async');
@@ -273,10 +277,10 @@ var SINRI_JS_OBJECT_OF_WINDOW={
 }
 var SINRI_JS=function(){
 	//SELECTOR
-	if(arguments.length==1){
+	if(arguments.length===1){
 		var instance=SINRI_JS();
 		var list = instance.querySelectors(arguments[0]);
-		if(list.length==0){
+		if(list.length===0){
 			instance.setElements([]);
 		}else{
 			instance.setElements(list);
@@ -287,14 +291,14 @@ var SINRI_JS=function(){
 	return SINRI_JS_OBJECT;
 };
 
-for(var method in SINRI_JS_OBJECT_OF_TOOLKIT){
-	SINRI_JS[method]=SINRI_JS_OBJECT_OF_TOOLKIT[method];
+for(var method_toolkit in SINRI_JS_OBJECT_OF_TOOLKIT){
+	SINRI_JS[method_toolkit]=SINRI_JS_OBJECT_OF_TOOLKIT[method_toolkit];
 }
-for(var method in SINRI_JS_OBJECT_OF_AJAX){
-	SINRI_JS[method]=SINRI_JS_OBJECT_OF_AJAX[method];
+for(var method_ajax in SINRI_JS_OBJECT_OF_AJAX){
+	SINRI_JS[method_ajax]=SINRI_JS_OBJECT_OF_AJAX[method_ajax];
 }
-for(var method in SINRI_JS_OBJECT_OF_WINDOW){
-	SINRI_JS[method]=SINRI_JS_OBJECT_OF_WINDOW[method];
+for(var method_window in SINRI_JS_OBJECT_OF_WINDOW){
+	SINRI_JS[method_window]=SINRI_JS_OBJECT_OF_WINDOW[method_window];
 }
 
 /**

@@ -47,6 +47,7 @@ Just like old style jQuery AJAX.
 	$.ajax({
 		url:'api/subset',
 		method:'get',//optional: get(default),post,put,delete
+		header:{H:V},//optional: headers
 		data:DATA,//optional: string or object
 		beforeSend:function(method,url,data){
 			console.log('beforeSend: ',method,url,data);
